@@ -21,14 +21,12 @@ References:
    - https://developer.mozilla.org/en-US/docs/JSON#JSON_in_Firefox_2
 */
 
-var util = require('util');
 var fs = require('fs');
 var program = require('commander');
 var cheerio = require('cheerio');
 var rest = require('restler');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
-var URLHTMLFILE_DEFAULT = "empty";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -64,56 +62,19 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
-if(require.main == module) {
+
+equire.main == module) {
     program
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-        .option('-u, --url <url_html_file>', 'Url to html file', URLHTMLFILE_DEFAULT)
+        .option('-u, --url <url_html_file>', 'Url to html file')
         .parse(process.argv);
 
-	if(program.url == "empty")
-	{
+    rest.get(program.url).on('complete', console.log('this is it'));
 
-		var checkJson = checkHtmlFile(program.file, program.checks);
-		var outJson = JSON.stringify(checkJson, null, 4);
-    		
-		console.log("Results for file named: " + program.file + "\n" + outJson);
-		fs.writeFileSync('urlCheck.txt',"Results for file named: " + program.file + "\n" + outJson);
-	}
-	else 
-	{
-		var checkUrl = program.url;
-
-		if(checkUrl.substr(0,7) != 'http://')
-		{
-			checkUrl = 'http://' + checkUrl;
-
-		}
-			
-
-	        rest.get(checkUrl).on('complete', function(result) {
-        	        if (result instanceof Error)
-        	        {
-				console.log("Could not process URL: " + checkUrl);
-        	                util.puts('Error: ' + result.message);
-        	        }
-        	        else
-        	        {
-				// util.puts(result);
-
-				//TASK: FILE NAMING AND CLEAN-UP - Non-issue. File is written over each time.
-				fs.writeFileSync('check.html', result);
-
-                		var checkJsonUrl = checkHtmlFile('check.html', program.checks);
-		                var outJsonUrl = JSON.stringify(checkJsonUrl, null, 4);
-
-                		console.log("Results for URL: " + checkUrl + "\n" + outJsonUrl);
-                                fs.writeFileSync('urlCheck.txt',"Results for URL: " + checkUrl + "\n" + outJsonUrl);
-        	        }
-        	});
-	}
-}
-else
-{
-	exports.checkHtmlFile = checkHtmlFile;
+    var checkJson = checkHtmlFile(program.file, program.checks);
+    var outJson = JSON.stringify(checkJson, null, 4);
+    console.log(outJson);
+} else {
+    exports.checkHtmlFile = checkHtmlFile;
 }
